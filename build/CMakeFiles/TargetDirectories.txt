@@ -1,3 +1,3 @@
-C:/Users/Alexander/Documents/Git/n-body-sim/build/CMakeFiles/nbodysim.dir
-C:/Users/Alexander/Documents/Git/n-body-sim/build/CMakeFiles/ALL_BUILD.dir
-C:/Users/Alexander/Documents/Git/n-body-sim/build/CMakeFiles/ZERO_CHECK.dir
+/Users/miagalassi/Documents/git/n-body-sim/build/CMakeFiles/nbodysim.dir
+/Users/miagalassi/Documents/git/n-body-sim/build/CMakeFiles/edit_cache.dir
+/Users/miagalassi/Documents/git/n-body-sim/build/CMakeFiles/rebuild_cache.dir
