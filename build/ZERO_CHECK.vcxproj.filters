@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="18.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\Alexander\Documents\Git\n-body-sim\build\CMakeFiles\b8a2cfd6a919389b05ea8fee62dfbc0d\generate.stamp.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{8484E83F-A7D2-3A88-BD9A-FB069E0AE139}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
