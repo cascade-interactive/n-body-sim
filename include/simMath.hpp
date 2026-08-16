@@ -26,3 +26,11 @@ inline Vector3 operator-(const Vector3 &a, const Vector3 &b) {
 inline Vector3 operator*(const Vector3 &v, double scalar) {
   return {v.x * scalar, v.y * scalar, v.z * scalar};
 }
+
+inline Vector3 operator*(const Vector3 &v, const Vector3 &other) {
+  return {v.x * other.x, v.y * other.y, v.z * other.z};
+}
+
+inline Vector3 operator*(double scalar, const Vector3 &v) {
+  return {v.x * scalar, v.y * scalar, v.z * scalar};
+}

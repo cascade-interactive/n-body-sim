@@ -1,7 +1,7 @@
 {
 	"InstallScripts" : 
 	[
-		"/Users/miagalassi/Documents/git/n-body-sim/build/cmake_install.cmake"
+		"C:/Users/Alexander/Documents/Git/n-body-sim/build/cmake_install.cmake"
 	],
 	"Parallel" : false
 }

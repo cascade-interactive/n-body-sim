@@ -2,10 +2,18 @@
 // Main entry point
 
 #include "../include/body.hpp"
+#include "../include/integrator.hpp"
 #include <iostream>
+#include <fstream>
 #include <string>
 
 int main(int argc, char **argv) {
+
+  std::ofstream output_file("output.txt");
+  if (!output_file.is_open()) {
+    std::cerr << "Error: Could not open output file.\n";
+    return 1;
+  }
 
   for (int i = 0; i < argc; ++i)
     std::cout << argv[i] << '\n';
@@ -24,35 +32,19 @@ int main(int argc, char **argv) {
 
     // ArgV is the timestep
     // Update the position of the earth based on its velocity and the timestep
-    int dt = 10;
 
-    Vector3 r = sun.position - earth.position;
-    double distance = Length(r);
-
-    // Calculate the gravitational force between the earth and the sun
-    double G = 6.67430e-11; // Gravitational constant
-
-    double scale = G * sun.mass / (distance * distance * distance);
-
-    earth.acceleration.x = r.x * scale;
-    earth.acceleration.y = r.y * scale;
-    earth.acceleration.z = r.z * scale;
-
-    earth.velocity.x += earth.acceleration.x * dt;
-    earth.velocity.y += earth.acceleration.y * dt;
-    earth.velocity.z += earth.acceleration.z * dt;
-
-    earth.position.x += earth.velocity.x * dt;
-    earth.position.y += earth.velocity.y * dt;
-    earth.position.z += earth.velocity.z * dt;
-
-    std::cout << "Earth position: (" << earth.position.x << ", "
-              << earth.position.y << ", " << earth.position.z << ")\n";
-    std::cout << "Earth velocity: (" << earth.velocity.x << ", "
-              << earth.velocity.y << ", " << earth.velocity.z << ")\n";
-    std::cout << "Earth acceleration: (" << earth.acceleration.x << ", "
-              << earth.acceleration.y << ", " << earth.acceleration.z << ")\n";
+    integrate_verlet(&earth.position, &earth.velocity, &earth.acceleration, std::stod(argv[2]));
+    if (i % 1000 == 0) 
+    {
+    output_file << "Time: " << i * std::stod(argv[2]) << " seconds\n";
+    output_file << "Earth Position: (" << earth.position.x << ", " << earth.position.y << ", " << earth.position.z << std::endl;
+    output_file << "Earth Velocity: (" << earth.velocity.x << ", " << earth.velocity.y << ", " << earth.velocity.z << std::endl;
+    output_file << "Earth Acceleration: (" << earth.acceleration.x << ", " << earth.acceleration.y << ", " << earth.acceleration.z << std::endl;
+    output_file << "\n";
+    }
   }
+
+  output_file.close();
 
   return 0;
 }
