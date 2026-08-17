@@ -4,7 +4,6 @@
 #include "simMath.hpp"
 #include <vector>
 
-
 inline constexpr double G = 6.67430e-11; // Gravitational constant
 
 Vector3 calculate_acceleration(std::size_t i, const std::vector<Body> &bodies,
