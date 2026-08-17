@@ -4,6 +4,7 @@
 #include "../include/body.hpp"
 #include "../include/integrator.hpp"
 #include "../include/simulation.hpp"
+#include "integrator_cuda.hpp"
 #include <chrono>
 #include <fstream>
 #include <iostream>
@@ -12,6 +13,8 @@
 #include <vector>
 
 int main(int argc, char **argv) {
+
+  cuda();
 
   // Check command line arguments
   if (argc != 4) {
@@ -32,12 +35,6 @@ int main(int argc, char **argv) {
   Simulation sim(steps, dt, num_bodies);
 
   sim.begin();
-
-  // ArgV is the timestep
-  // Update the position of the earth based on its velocity and the timestep
-
-  std::cout << "Number of steps: " << argv[1] << '\n';
-  std::cout << "Timestep: " << argv[2] << '\n';
 
   for (int i = 0; i < steps; ++i) {
     sim.update((uint64_t)i);

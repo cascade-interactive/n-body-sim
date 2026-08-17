@@ -26,21 +26,6 @@ void integrate_verlet(std::vector<Body> &bodies, double dt) {
     bodies[i].velocity = new_velocities[i];
     bodies[i].acceleration = new_accelerations[i];
   }
-
-  // Vector3 previous_position = *position;
-  // Vector3 previous_velocity = *velocity;
-  // Vector3 previous_acceleration = *acceleration;
-
-  // Vector3 new_position = *position + *velocity * dt + 0.5 * (*acceleration) *
-  // dt * dt; Vector3 new_acceleration;
-  //
-  // calculate_acceleration(new_position, &new_acceleration);
-  // Vector3 new_velocity = *velocity + 0.5 * (*acceleration + new_acceleration)
-  // * dt;
-
-  // *position = new_position;
-  // *velocity = new_velocity;
-  // *acceleration = new_acceleration;
 }
 
 Vector3 calculate_acceleration(std::size_t i, const std::vector<Body> &bodies,

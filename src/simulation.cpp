@@ -9,6 +9,9 @@ Simulation::Simulation(int steps, double dt, int num_bodies) {
 // Runs once on init
 void Simulation::begin() {
 
+  std::cout << "Number of steps: " << steps_ << '\n';
+  std::cout << "Timestep: " << dt_ << '\n';
+
   // Check file
   output_file_.open("output.txt");
   if (!output_file_.is_open()) {
@@ -50,7 +53,7 @@ void Simulation::update(uint64_t iteration) {
   int i = iteration;
   auto tick_start = std::chrono::high_resolution_clock::now();
 
-  integrate_verlet(bodies, dt_);
+  cuda_integrate_verlet(bodies, dt_);
 
   auto tick_end = std::chrono::high_resolution_clock::now();
   auto elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(

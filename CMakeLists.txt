@@ -12,7 +12,7 @@ add_executable(nbodysim
     src/main.cpp
     src/simulation.cpp
     src/integrator.cpp
-    src/integrator.cu
+    src/integrator_cuda.cu
 )
 
 target_include_directories(nbodysim PRIVATE include)

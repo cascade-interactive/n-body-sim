@@ -2,6 +2,7 @@
 
 #include "body.hpp"
 #include "integrator.hpp"
+#include "integrator_cuda.hpp"
 #include <chrono>
 #include <fstream>
 #include <iostream>
