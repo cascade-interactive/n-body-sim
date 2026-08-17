@@ -8,6 +8,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CUDA_STANDARD 20)
 set(CMAKE_CUDA_STANDARD_REQUIRED ON)
 
+set(CMAKE_CUDA_ARCHITECTURES 89)
+
 add_executable(nbodysim
     src/main.cpp
     src/simulation.cpp

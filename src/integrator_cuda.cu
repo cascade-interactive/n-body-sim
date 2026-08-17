@@ -10,6 +10,8 @@ __global__ void update_positions(Body*, int, double);
 __global__ void calculate_acceleration(Body*, Vector3*, int);
 __global__ void update_velocities(Body*, Vector3*, int, double);
 
+inline constexpr double G = 6.67430e-11;
+
 
 void cuda_integrate_verlet(std::vector<Body> &bodies, double dt) {
   int n = static_cast<int>(bodies.size());
@@ -62,7 +64,7 @@ __global__ void calculate_acceleration(Body *bodies, Vector3 *new_accelerations,
   Vector3 displacement;
   double distance;
   double factor;
-  
+
   for (int j = 0; j < n; ++j) {
     if (i == j) continue;
 

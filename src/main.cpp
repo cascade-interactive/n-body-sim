@@ -14,8 +14,6 @@
 
 int main(int argc, char **argv) {
 
-  cuda();
-
   // Check command line arguments
   if (argc != 4) {
     std::cerr << "Usage: " << argv[0]
