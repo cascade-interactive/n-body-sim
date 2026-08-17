@@ -1,5 +1,11 @@
 #include "simulation.hpp"
 
+static std::int64_t cpu_total_time_ns = 0;
+static std::int64_t cuda_total_time_ns = 0;
+
+static std::int64_t cpu_warmup_time_ns = 0;
+static std::int64_t cuda_warmup_time_ns = 0;
+
 Simulation::Simulation(int steps, double dt, int num_bodies) {
   steps_ = steps;
   num_bodies_ = num_bodies;
@@ -28,14 +34,15 @@ void Simulation::begin() {
 
   bodies.push_back(sun);
 
+  // Randomly generate position, velocity, mass, and radius for each body
+  std::mt19937 gen(42);
+
+  std::uniform_real_distribution<> pos_dist(-1e11, 1e11);
+  std::uniform_real_distribution<> vel_dist(-1e4, 1e4);
+  std::uniform_real_distribution<> mass_dist(1e20, 1e30);
+  std::uniform_real_distribution<> radius_dist(1e3, 1e7);
+
   for (int i = 1; i < num_bodies_; ++i) {
-    // Randomly generate position, velocity, mass, and radius for each body
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_real_distribution<> pos_dist(-1e11, 1e11);
-    std::uniform_real_distribution<> vel_dist(-1e4, 1e4);
-    std::uniform_real_distribution<> mass_dist(1e20, 1e30);
-    std::uniform_real_distribution<> radius_dist(1e3, 1e7);
 
     Body body{
         .position = {pos_dist(gen), pos_dist(gen), pos_dist(gen)},
@@ -51,19 +58,48 @@ void Simulation::begin() {
 // Runs every tick
 void Simulation::update(uint64_t iteration) {
   int i = iteration;
-  auto tick_start = std::chrono::high_resolution_clock::now();
 
-  cuda_integrate_verlet(bodies, dt_);
+  // Both integrators start from the exact same state
+  std::vector<Body> cpu_bodies = bodies;
+  std::vector<Body> cuda_bodies = bodies;
 
-  auto tick_end = std::chrono::high_resolution_clock::now();
-  auto elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(
-      tick_end - tick_start);
-  total_time_ns += elapsed.count();
+  // CPU
+  auto cpu_tick_start = std::chrono::high_resolution_clock::now();
 
-  std::cout << "Step " << i << " completed in " << elapsed.count() << "ns\n";
+  integrate_verlet(cpu_bodies, dt_);
+
+  auto cpu_tick_end = std::chrono::high_resolution_clock::now();
+
+  auto cpu_elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(
+      cpu_tick_end - cpu_tick_start);
+
+  // CUDA
+  auto cuda_tick_start = std::chrono::high_resolution_clock::now();
+
+  cuda_integrate_verlet(cuda_bodies, dt_);
+
+  auto cuda_tick_end = std::chrono::high_resolution_clock::now();
+
+  auto cuda_elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(
+      cuda_tick_end - cuda_tick_start);
+
+  if (iteration == 0) {
+    cpu_warmup_time_ns = cpu_elapsed.count();
+    cuda_warmup_time_ns = cuda_elapsed.count();
+  } else {
+    cpu_total_time_ns += cpu_elapsed.count();
+    cuda_total_time_ns += cuda_elapsed.count();
+  }
+
+  std::cout << "Step " << i << " CPU: " << cpu_elapsed.count() << " ns"
+            << " CUDA: " << cuda_elapsed.count() << " ns\n";
+
+  // Continue simulation using CUDA result
+  bodies = cuda_bodies;
 
   // Output file logging
   output_file_ << "Step " << i << ":\n";
+
   for (std::size_t j = 0; j < bodies.size(); ++j) {
     output_file_ << "Body " << j << ": Position(" << bodies[j].position.x
                  << ", " << bodies[j].position.y << ", " << bodies[j].position.z
@@ -75,6 +111,7 @@ void Simulation::update(uint64_t iteration) {
                  << bodies[j].acceleration.y << ", " << bodies[j].acceleration.z
                  << ")\n";
   }
+
   output_file_ << "\n";
 }
 
@@ -82,6 +119,23 @@ void Simulation::terminate() {
   // Close the output file
   output_file_.close();
 
-  double average_time_ns = static_cast<double>(total_time_ns) / steps_;
-  std::cout << "Average time per step: " << average_time_ns << " ns\n";
+  int measured_steps = steps_ - 1;
+
+  double cpu_average_time_ns =
+      static_cast<double>(cpu_total_time_ns) / measured_steps;
+
+  double cuda_average_time_ns =
+      static_cast<double>(cuda_total_time_ns) / measured_steps;
+
+  std::cout << "\nCPU:\n";
+  std::cout << "Warmup: " << cpu_warmup_time_ns << " ns\n";
+  std::cout << "Total time excluding warmup: " << cpu_total_time_ns << " ns\n";
+  std::cout << "Average timestep excluding warmup: " << cpu_average_time_ns
+            << " ns\n";
+
+  std::cout << "\nCUDA:\n";
+  std::cout << "Warmup: " << cuda_warmup_time_ns << " ns\n";
+  std::cout << "Total time excluding warmup: " << cuda_total_time_ns << " ns\n";
+  std::cout << "Average timestep excluding warmup: " << cuda_average_time_ns
+            << " ns\n";
 }
