@@ -5,15 +5,22 @@
 #include "body.hpp"
 #include "integrator_cuda.hpp"
 
-
-__global__ void update_positions(Body*, int, double);
-__global__ void calculate_acceleration(Body*, Vector3*, int);
-__global__ void update_velocities(Body*, Vector3*, int, double);
-
 inline constexpr double G = 6.67430e-11;
 
+CudaIntegrator::CudaIntegrator(double dt) : dt_(dt) {
+  init();
+}
 
-void cuda_integrate_verlet(std::vector<Body> &bodies, double dt) {
+void CudaIntegrator::init() {
+  // Initialize CUDA
+  cudaSetDevice(0);
+}
+
+void CudaIntegrator::shutdown() {
+  cudaDeviceReset();
+}
+
+void CudaIntegrator::integrate_verlet(std::vector<Body> &bodies, double dt) {
   int n = static_cast<int>(bodies.size());
   
   if (n == 0) return;

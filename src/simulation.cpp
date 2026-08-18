@@ -5,6 +5,8 @@ static std::int64_t cuda_total_time_ns = 0;
 
 static std::int64_t cpu_warmup_time_ns = 0;
 static std::int64_t cuda_warmup_time_ns = 0;
+static Simulation::IntegratorMode active_mode =
+  Simulation::IntegratorMode::None;
 
 Simulation::Simulation(int steps, double dt, int num_bodies) {
   steps_ = steps;
@@ -13,7 +15,9 @@ Simulation::Simulation(int steps, double dt, int num_bodies) {
 }
 
 // Runs once on init
-void Simulation::begin() {
+void Simulation::begin(IntegratorMode mode) {
+
+  active_mode = mode;
 
   std::cout << "Number of steps: " << steps_ << '\n';
   std::cout << "Timestep: " << dt_ << '\n';
@@ -53,49 +57,79 @@ void Simulation::begin() {
 
     bodies.push_back(body);
   }
+
+  // Initialize accelerations
+  std::vector<Vector3> positions;
+  positions.reserve(bodies.size());
+
+  for (const Body &body : bodies) {
+    positions.push_back(body.position);
+  }
+
+  for (std::size_t i = 0; i < bodies.size(); ++i) {
+    bodies[i].acceleration = calculate_acceleration(i, bodies, positions);
+  }
 }
 
 // Runs every tick
 void Simulation::update(uint64_t iteration) {
   int i = iteration;
 
-  // Both integrators start from the exact same state
   std::vector<Body> cpu_bodies = bodies;
   std::vector<Body> cuda_bodies = bodies;
 
-  // CPU
-  auto cpu_tick_start = std::chrono::high_resolution_clock::now();
+  std::chrono::nanoseconds cpu_elapsed{0};
+  std::chrono::nanoseconds cuda_elapsed{0};
 
-  integrate_verlet(cpu_bodies, dt_);
+  if (active_mode == IntegratorMode::Cpu ||
+      active_mode == IntegratorMode::Both) {
+    auto cpu_tick_start = std::chrono::high_resolution_clock::now();
+    integrate_verlet(cpu_bodies, dt_);
+    auto cpu_tick_end = std::chrono::high_resolution_clock::now();
 
-  auto cpu_tick_end = std::chrono::high_resolution_clock::now();
+    cpu_elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(
+        cpu_tick_end - cpu_tick_start);
 
-  auto cpu_elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(
-      cpu_tick_end - cpu_tick_start);
-
-  // CUDA
-  auto cuda_tick_start = std::chrono::high_resolution_clock::now();
-
-  cuda_integrate_verlet(cuda_bodies, dt_);
-
-  auto cuda_tick_end = std::chrono::high_resolution_clock::now();
-
-  auto cuda_elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(
-      cuda_tick_end - cuda_tick_start);
-
-  if (iteration == 0) {
-    cpu_warmup_time_ns = cpu_elapsed.count();
-    cuda_warmup_time_ns = cuda_elapsed.count();
-  } else {
-    cpu_total_time_ns += cpu_elapsed.count();
-    cuda_total_time_ns += cuda_elapsed.count();
+    if (iteration == 0) {
+      cpu_warmup_time_ns = cpu_elapsed.count();
+    } else {
+      cpu_total_time_ns += cpu_elapsed.count();
+    }
   }
 
-  std::cout << "Step " << i << " CPU: " << cpu_elapsed.count() << " ns"
-            << " CUDA: " << cuda_elapsed.count() << " ns\n";
+  if (active_mode == IntegratorMode::Gpu ||
+      active_mode == IntegratorMode::Both) {
+    auto cuda_tick_start = std::chrono::high_resolution_clock::now();
+    CudaIntegrator::integrate_verlet(cuda_bodies, dt_);
+    auto cuda_tick_end = std::chrono::high_resolution_clock::now();
 
-  // Continue simulation using CUDA result
-  bodies = cuda_bodies;
+    cuda_elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(
+        cuda_tick_end - cuda_tick_start);
+
+    if (iteration == 0) {
+      cuda_warmup_time_ns = cuda_elapsed.count();
+    } else {
+      cuda_total_time_ns += cuda_elapsed.count();
+    }
+  }
+
+  std::cout << "Step " << i;
+  if (active_mode == IntegratorMode::Cpu ||
+      active_mode == IntegratorMode::Both) {
+    std::cout << " CPU: " << cpu_elapsed.count() << " ns";
+  }
+  if (active_mode == IntegratorMode::Gpu ||
+      active_mode == IntegratorMode::Both) {
+    std::cout << " CUDA: " << cuda_elapsed.count() << " ns";
+  }
+  std::cout << "\n";
+
+  if (active_mode == IntegratorMode::Cpu) {
+    bodies = cpu_bodies;
+  } else if (active_mode == IntegratorMode::Gpu ||
+             active_mode == IntegratorMode::Both) {
+    bodies = cuda_bodies;
+  }
 
   // Output file logging
   output_file_ << "Step " << i << ":\n";

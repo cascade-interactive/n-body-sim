@@ -12,10 +12,20 @@
 
 class Simulation {
 public:
+
+enum class IntegratorMode {
+  None,
+  Cpu,
+  Gpu,
+  Both
+};
+
   Simulation(int steps, double dt, int num_bodies);
-  void begin();
+  void begin(IntegratorMode mode);
   void update(std::uint64_t iteration);
   void terminate();
+
+  
 
 private:
   void initialize();
