@@ -33,3 +33,20 @@ CUDA:
 Warmup: 109187200 ns
 Total time excluding warmup: 594858900 ns
 Average timestep excluding warmup: 1.48715e+08 ns
+
+Release build: Almost tied at 10 steps, 100dt, 5000 bodies
+
+Preset
+- 10 steps
+- 100 sec timestep
+- 5000 bodies
+
+CPU:
+Warmup: 111792400 ns
+Total time excluding warmup: 753606500 ns
+Average timestep excluding warmup: 8.37341e+07 ns
+
+CUDA:
+Warmup: 115380700 ns
+Total time excluding warmup: 74926200 ns
+Average timestep excluding warmup: 8.32513e+06 ns
