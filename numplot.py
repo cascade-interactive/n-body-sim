@@ -4,10 +4,10 @@
 numplot.py
 
 Reads:
-    build/Debug/output.txt
+    build/Release/output.txt
 
 Writes:
-    build/Debug/nbody_trails_3d.png
+    build/Release/nbody_trails_3d.png
 
 Run from anywhere:
     python numplot.py
@@ -55,9 +55,9 @@ BODY_RE = re.compile(
 )
 
 
-def find_debug_dir() -> Path:
+def find_release_dir() -> Path:
     """
-    Find build/Debug relative to:
+    Find build/Release relative to:
       1. this script
       2. parent directories of this script
       3. current working directory
@@ -70,7 +70,7 @@ def find_debug_dir() -> Path:
     cwd = Path.cwd().resolve()
 
     for base in [script_dir, *script_dir.parents, cwd, *cwd.parents]:
-        candidate = base / "build" / "Debug"
+        candidate = base / "build" / "Release"
 
         if candidate not in candidates:
             candidates.append(candidate)
@@ -82,7 +82,7 @@ def find_debug_dir() -> Path:
     searched = "\n".join(f"  {p / 'output.txt'}" for p in candidates)
 
     raise FileNotFoundError(
-        "Could not find build/Debug/output.txt.\n"
+        "Could not find build/Release/output.txt.\n"
         "Searched:\n"
         f"{searched}"
     )
@@ -172,10 +172,10 @@ def set_equal_3d(ax, all_xyz):
 
 
 def main():
-    debug_dir = find_debug_dir()
+    release_dir = find_release_dir()
 
-    input_path = debug_dir / "output.txt"
-    output_path = debug_dir / "nbody_trails_3d.png"
+    input_path = release_dir / "output.txt"
+    output_path = release_dir / "nbody_trails_3d.png"
 
     print(f"Reading: {input_path}")
 
